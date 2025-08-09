@@ -1,0 +1,20 @@
+export_pipeline = """
+nbs -> pts
+pts -> lib
+"""
+
+docs_cl="nbs"
+docs_title="ctrlstack"
+
+[cl.lib]
+path="ctrlstack"
+
+[cl.nbs]
+format="ipynb"
+
+[cl.pts]
+format="percent"
+
+[cl.tests]
+path="tests"
+format="ipynb"
