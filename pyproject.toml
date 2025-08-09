@@ -27,7 +27,6 @@ include = [
 dev = [
     "jupyterlab>=4.4.0",
     "nblite>=0.6.0,<0.7.0",
-    "pydantic>=2.11.7",
 ]
 
 [project.scripts]
