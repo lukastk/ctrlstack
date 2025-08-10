@@ -36,9 +36,12 @@ def _add_method_to_class(func: Callable, controller_cls: Type[Controller], name:
     orig_sig = inspect.signature(func)
     params = list(orig_sig.parameters.values())
     
-    # Remove 'self' parameter if it exists (it will be handled by the bound method)
-    if params and params[0].name in ('self', 'cls'):
-        params = params[1:]
+    # Add `self` parameter if not present
+    if len(params) == 0 or params[0].name != 'self':
+        self_param = inspect.Parameter(
+            'self', inspect.Parameter.POSITIONAL_OR_KEYWORD
+        )
+        params = [self_param] + params
     
     method.__signature__ = inspect.Signature(
         parameters=params,
