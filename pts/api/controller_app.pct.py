@@ -7,7 +7,7 @@
 # %%
 #|hide
 import nblite; from nblite import show_doc; nblite.nbl_export()
-import ctrlstack.server as this_module
+import ctrlstack.controller_app as this_module
 
 # %%
 #|export
