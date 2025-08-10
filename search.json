@@ -1,0 +1,275 @@
+[
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "ctrlstack",
+    "section": "",
+    "text": "A Python framework for creating unified controller interfaces that can be exposed as both CLI applications and FastAPI web services.\nDefine your business logic once in a Controller class, and automatically generate both command-line tools and REST APIs from the same codebase."
+  },
+  {
+    "objectID": "index.html#features",
+    "href": "index.html#features",
+    "title": "ctrlstack",
+    "section": "Features",
+    "text": "Features\n\nSingle Source of Truth: Define methods once, get CLI and API automatically\nType Safety: Full Pydantic integration for request/response validation\nAsync Support: Native async/await support for both CLI and web endpoints\nFlexible Routing: Organize methods into logical groups\nRemote Controllers: Client-side proxies for seamless remote API calls\nAuthentication: Built-in API key authentication support"
+  },
+  {
+    "objectID": "index.html#quick-start",
+    "href": "index.html#quick-start",
+    "title": "ctrlstack",
+    "section": "Quick Start",
+    "text": "Quick Start\n\nInstallation\npip install ctrlstack\n\n\nBasic Example\nfrom ctrlstack import Controller, ctrl_cmd_method, ctrl_query_method\nfrom ctrlstack.server import create_controller_server\nfrom ctrlstack.cli import create_controller_cli\n\nclass MyController(Controller):\n    @ctrl_query_method\n    def get_status(self) -&gt; str:\n        return \"Service is running\"\n    \n    @ctrl_cmd_method  \n    async def send_message(self, message: str) -&gt; str:\n        return f\"Received: {message}\"\n\n# Create FastAPI app\nserver_app = create_controller_server(MyController())\n\n# Create CLI app  \ncli_app = create_controller_cli(MyController())\n\nif __name__ == \"__main__\":\n    cli_app()\nThis creates:\nCLI Usage:\npython app.py get-status\n# Output: Service is running\n\npython app.py send-message \"Hello World\"  \n# Output: Received: Hello World\nAPI Endpoints: - GET /query/get_status → Returns status - POST /cmd/send_message → Accepts JSON body with message\n\n\nRemote Controller\nAccess your API as if it were a local controller:\nfrom ctrlstack.remote_controller import get_remote_controller\n\n# Create remote controller client\nremote_ctrl = get_remote_controller(\n    MyController, \n    url=\"http://localhost:8000\",\n    api_key=\"your-api-key\"\n)\n\n# Use exactly like local controller\nstatus = await remote_ctrl.get_status()\nresult = await remote_ctrl.send_message(Message(text=\"Hello from remote!\"))\n\n\nDynamic Controller Building\nfrom ctrlstack.controller_app import ControllerApp\n\ncapp = ControllerApp()\n\n@capp.register_query()\nasync def health_check() -&gt; dict:\n    return {\"status\": \"healthy\", \"timestamp\": \"2024-01-01T00:00:00Z\"}\n\n@capp.register_cmd()\nasync def process_data(data: dict) -&gt; str:\n    return f\"Processed {len(data)} items\"\n\n# Get FastAPI server\nserver_app = capp.get_server_app(api_keys=[\"secret-key\"])\n\n# Get CLI app\ncli_app = capp.get_cli_app()"
+  },
+  {
+    "objectID": "index.html#method-types",
+    "href": "index.html#method-types",
+    "title": "ctrlstack",
+    "section": "Method Types",
+    "text": "Method Types\n\n@ctrl_query_method: GET endpoints, read-only operations\n@ctrl_cmd_method: POST endpoints, state-changing operations\n\n@ctrl_method(type, group): Custom method type and group"
+  },
+  {
+    "objectID": "index.html#advanced-features",
+    "href": "index.html#advanced-features",
+    "title": "ctrlstack",
+    "section": "Advanced Features",
+    "text": "Advanced Features\n\nCustom Routing Groups\nfrom ctrlstack import ControllerMethodType, ctrl_method\n\nclass AdminController(Controller):\n    @ctrl_method(ControllerMethodType.COMMAND, \"admin\")\n    def reset_database(self) -&gt; str:\n        return \"Database reset\"\n    \n    @ctrl_method(ControllerMethodType.QUERY, \"admin\")  \n    def get_metrics(self) -&gt; dict:\n        return {\"users\": 100, \"posts\": 500}\n\n# Creates routes: /admin/reset_database, /admin/get_metrics\n\n\nAuthentication\n# Server with API key authentication\napp = create_controller_server(\n    MyController(), \n    api_keys=[\"secret-key-1\", \"secret-key-2\"]\n)\n\n# Clients must include: X-API-Key: secret-key-1"
+  },
+  {
+    "objectID": "index.html#development",
+    "href": "index.html#development",
+    "title": "ctrlstack",
+    "section": "Development",
+    "text": "Development\n\nPrerequisites\n\nInstall uv.\nInstall direnv to automatically load the project virtual environment when entering it.\n\nMac: brew install direnv\nLinux: curl -sfL https://direnv.net/install.sh | bash\n\n\n\n\nSetting up the environment\nRun the following:\n# In the root of the repo folder\nuv sync --all-extras # Installs the virtual environment at './.venv'\ndirenv allow # Allows the automatic running of the script './.envrc'\nnbl install-hooks # Installs a git hooks that ensures that notebooks are added properly\nYou are now set up to develop the codebase.\nFurther instructions:\n\nTo export notebooks run nbl export.\nTo clean notebooks run nbl clean.\nTo see other available commands run just nbl.\nTo add a new dependency run uv add package-name. See the the uv documentation for more details.\nYou need to git add all ‘twinned’ notebooks for the commit to be validated by the git-hook. For example, if you add nbs/my-nb.ipynb, you must also add pts/my-nb.pct.py.\nTo render the documentation, run nbl render-docs. To preview it run nbl preview-docs\nTo upgrade all dependencies run uv sync --upgrade --all-extras"
+  },
+  {
+    "objectID": "api/remote_cli.html",
+    "href": "api/remote_cli.html",
+    "title": "remote_cli",
+    "section": "",
+    "text": "Create a function that can start a fastapi server locally, but only if a lock file doesnt exist.\n\nIt randomises the port name and stores it in the lock file.\nIf the lock file exists but the port is not occupied, it removes the lock file and starts the server.\n\nDefine additional typer commands that can be used to start, stop and restart the server.\nassert not is_pickleable(lambda x: x)\ndef foo(): pass\nassert is_pickleable(foo)",
+    "crumbs": [
+      "api",
+      "remote_cli"
+    ]
+  },
+  {
+    "objectID": "api/remote_cli.html#create_remote_controller_cli",
+    "href": "api/remote_cli.html#create_remote_controller_cli",
+    "title": "remote_cli",
+    "section": "create_remote_controller_cli",
+    "text": "create_remote_controller_cli\ncreate_remote_controller_cli(\n   base_controller_cls: Type[Controller],\n   url: Optional[str],\n   api_key: Optional[str],\n   local_mode: bool,\n   start_local_server_automatically: bool,\n   lockfile_path: Optional[str],\n   controller: Controller|Callable[[], Controller],\n   local_server_start_timeout: float\n) -&gt; typer.Typer\n\n\nfrom ctrlstack import ctrl_cmd_method, ctrl_query_method, ctrl_method\n\nclass FooController(Controller):\n    @ctrl_cmd_method\n    def bar(self):\n        pass\n    \n    @ctrl_query_method\n    def baz(self, x: int) -&gt; str:\n        pass\n    \n    @ctrl_method(ControllerMethodType.QUERY, \"q\")\n    def qux(self):\n        pass\n    \nremote_controller = create_remote_controller(FooController, \"local\")\n    \nremote_cli_app = create_remote_controller_cli(\n    FooController,\n    local_mode=True,\n    lockfile_path=\"/tmp/ctrlstack.lock\",\n)",
+    "crumbs": [
+      "api",
+      "remote_cli"
+    ]
+  },
+  {
+    "objectID": "api/controller.html",
+    "href": "api/controller.html",
+    "title": "controller",
+    "section": "",
+    "text": "Inherits from: Enum",
+    "crumbs": [
+      "api",
+      "controller"
+    ]
+  },
+  {
+    "objectID": "api/controller.html#controllermethodtype",
+    "href": "api/controller.html#controllermethodtype",
+    "title": "controller",
+    "section": "",
+    "text": "Inherits from: Enum",
+    "crumbs": [
+      "api",
+      "controller"
+    ]
+  },
+  {
+    "objectID": "api/controller.html#ctrl_method",
+    "href": "api/controller.html#ctrl_method",
+    "title": "controller",
+    "section": "ctrl_method",
+    "text": "ctrl_method\nctrl_method(method_type: ControllerMethodType, group: str)\nDecorator to define a Controller method",
+    "crumbs": [
+      "api",
+      "controller"
+    ]
+  },
+  {
+    "objectID": "api/controller.html#ctrl_cmd_method",
+    "href": "api/controller.html#ctrl_cmd_method",
+    "title": "controller",
+    "section": "ctrl_cmd_method",
+    "text": "ctrl_cmd_method\nctrl_cmd_method(func)\nDecorator to define a command method in a Controller.",
+    "crumbs": [
+      "api",
+      "controller"
+    ]
+  },
+  {
+    "objectID": "api/controller.html#ctrl_query_method",
+    "href": "api/controller.html#ctrl_query_method",
+    "title": "controller",
+    "section": "ctrl_query_method",
+    "text": "ctrl_query_method\nctrl_query_method(func)\nDecorator to define a query method in a Controller.",
+    "crumbs": [
+      "api",
+      "controller"
+    ]
+  },
+  {
+    "objectID": "api/controller.html#controller",
+    "href": "api/controller.html#controller",
+    "title": "controller",
+    "section": "Controller",
+    "text": "Controller\nInherits from: ABC\n\n\nMethods\n\n\nget_controller_method_groups\nget_controller_method_groups(cls)\nList of controller method types in this controller.\n\n\n\nget_controller_methods\nget_controller_methods(\n   cls,\n   method_type: ControllerMethodType|None,\n   group: str|None\n)\nList of controller methods in this controller.\n\n\nclass FooController(Controller):\n    @ctrl_cmd_method\n    def bar(self):\n        pass\n    \n    @ctrl_query_method\n    def baz(self, x: int) -&gt; str:\n        pass\n    \n    @ctrl_method(ControllerMethodType.QUERY, \"q\")\n    def qux(self):\n        pass\n    \nassert FooController.get_controller_method_groups() == ['cmd', 'query', 'q']\nassert FooController.get_controller_methods() == ['bar', 'baz', 'qux']\nassert FooController.get_controller_methods(group='cmd') == ['bar']\nassert FooController.get_controller_methods(method_type=ControllerMethodType.COMMAND) == ['bar']\nassert FooController.get_controller_methods(method_type=ControllerMethodType.QUERY) == ['baz', 'qux']\nassert FooController.get_controller_methods(group='query') == ['baz']\nassert FooController.get_controller_methods(group='q') == ['qux']",
+    "crumbs": [
+      "api",
+      "controller"
+    ]
+  },
+  {
+    "objectID": "api/cli.html",
+    "href": "api/cli.html",
+    "title": "cli",
+    "section": "",
+    "text": "create_controller_cli(\n   controller: Controller,\n   prepend_method_group: bool\n) -&gt; typer.Typer\nGet the controller server instance.\nArguments: - controller (Controller): The controller to get the server for.\nReturns: FastAPI: The controller server instance.\n\n\nfrom ctrlstack import ctrl_cmd_method, ctrl_query_method, ctrl_method\n\nclass FooController(Controller):\n    @ctrl_cmd_method\n    def bar(self):\n        pass\n    \n    @ctrl_query_method\n    def baz(self, x: int) -&gt; str:\n        pass\n    \n    @ctrl_method(ControllerMethodType.QUERY, \"q\")\n    def qux(self):\n        pass\n    \napp = create_controller_cli(FooController())",
+    "crumbs": [
+      "api",
+      "cli"
+    ]
+  },
+  {
+    "objectID": "api/cli.html#create_controller_cli",
+    "href": "api/cli.html#create_controller_cli",
+    "title": "cli",
+    "section": "",
+    "text": "create_controller_cli(\n   controller: Controller,\n   prepend_method_group: bool\n) -&gt; typer.Typer\nGet the controller server instance.\nArguments: - controller (Controller): The controller to get the server for.\nReturns: FastAPI: The controller server instance.\n\n\nfrom ctrlstack import ctrl_cmd_method, ctrl_query_method, ctrl_method\n\nclass FooController(Controller):\n    @ctrl_cmd_method\n    def bar(self):\n        pass\n    \n    @ctrl_query_method\n    def baz(self, x: int) -&gt; str:\n        pass\n    \n    @ctrl_method(ControllerMethodType.QUERY, \"q\")\n    def qux(self):\n        pass\n    \napp = create_controller_cli(FooController())",
+    "crumbs": [
+      "api",
+      "cli"
+    ]
+  },
+  {
+    "objectID": "api/controller_app.html",
+    "href": "api/controller_app.html",
+    "title": "controller_app",
+    "section": "",
+    "text": "__init__(self)\n\n\n\n\ncontroller_cls(self) -&gt; Type[Controller]\n\n\n\n\nregister(\n   self,\n   method_type: ControllerMethodType,\n   group: str,\n   name: Optional[str]\n)\n\n\n\n\nregister_cmd(self, name: Optional[str])\n\n\n\n\nregister_query(self, name: Optional[str])\n\n\n\n\nget_controller(self) -&gt; Type[Controller]\n\n\n\n\ncrreate_server_app(self, *args, **kwargs) -&gt; 'FastAPI'\n\n\n\n\ncreate_cli_app(self, *args, **kwargs) -&gt; 'ClickApp'\n\n\ncapp = ControllerApp()\n\n@capp.register(ControllerMethodType.COMMAND, group=\"test\")\ndef foo():\n    \"\"\"A simple test function.\"\"\"\n    return \"Hello, World!\"\n\n@capp.register_cmd(name=\"bar_cmd\")\ndef bar():\n    \"\"\"A simple test function.\"\"\"\n    return \"Hello, World!\"\n\n@capp.register_query(name=\"baz_query\")\ndef baz():\n    \"\"\"A simple test function.\"\"\"\n    return \"Hello, World!\"\n\nassert capp.controller_cls.get_controller_methods() == ['bar_cmd', 'baz_query', 'foo']\nassert capp.controller_cls.get_controller_method_groups() == ['cmd', 'query', 'test']\nassert capp.get_controller().foo() == \"Hello, World!\"\nassert capp.get_controller().bar_cmd() == \"Hello, World!\"\nassert capp.get_controller().baz_query() == \"Hello, World!\"\n\ncli_app = capp.create_cli_app()\nserver_app = capp.crreate_server_app()",
+    "crumbs": [
+      "api",
+      "controller_app"
+    ]
+  },
+  {
+    "objectID": "api/controller_app.html#controllerapp",
+    "href": "api/controller_app.html#controllerapp",
+    "title": "controller_app",
+    "section": "",
+    "text": "__init__(self)\n\n\n\n\ncontroller_cls(self) -&gt; Type[Controller]\n\n\n\n\nregister(\n   self,\n   method_type: ControllerMethodType,\n   group: str,\n   name: Optional[str]\n)\n\n\n\n\nregister_cmd(self, name: Optional[str])\n\n\n\n\nregister_query(self, name: Optional[str])\n\n\n\n\nget_controller(self) -&gt; Type[Controller]\n\n\n\n\ncrreate_server_app(self, *args, **kwargs) -&gt; 'FastAPI'\n\n\n\n\ncreate_cli_app(self, *args, **kwargs) -&gt; 'ClickApp'\n\n\ncapp = ControllerApp()\n\n@capp.register(ControllerMethodType.COMMAND, group=\"test\")\ndef foo():\n    \"\"\"A simple test function.\"\"\"\n    return \"Hello, World!\"\n\n@capp.register_cmd(name=\"bar_cmd\")\ndef bar():\n    \"\"\"A simple test function.\"\"\"\n    return \"Hello, World!\"\n\n@capp.register_query(name=\"baz_query\")\ndef baz():\n    \"\"\"A simple test function.\"\"\"\n    return \"Hello, World!\"\n\nassert capp.controller_cls.get_controller_methods() == ['bar_cmd', 'baz_query', 'foo']\nassert capp.controller_cls.get_controller_method_groups() == ['cmd', 'query', 'test']\nassert capp.get_controller().foo() == \"Hello, World!\"\nassert capp.get_controller().bar_cmd() == \"Hello, World!\"\nassert capp.get_controller().baz_query() == \"Hello, World!\"\n\ncli_app = capp.create_cli_app()\nserver_app = capp.crreate_server_app()",
+    "crumbs": [
+      "api",
+      "controller_app"
+    ]
+  },
+  {
+    "objectID": "api/server.html",
+    "href": "api/server.html",
+    "title": "server",
+    "section": "",
+    "text": "create_controller_server(\n   controller: Controller,\n   prepend_method_group: bool,\n   api_keys: Optional[List[str]]\n) -&gt; FastAPI\nGet the controller server instance.\nArguments: - controller (Controller): The controller to get the server for.\nReturns: FastAPI: The controller server instance.\n\n\nfrom ctrlstack import ctrl_cmd_method, ctrl_query_method, ctrl_method\n\nclass FooController(Controller):\n    @ctrl_cmd_method\n    def bar(self):\n        pass\n    \n    @ctrl_query_method\n    def baz(self, x: int) -&gt; str:\n        pass\n    \n    @ctrl_method(ControllerMethodType.QUERY, \"q\")\n    def qux(self):\n        pass\n    \napp = create_controller_server(FooController())\n\n\nassert _is_port_free(_find_free_port())",
+    "crumbs": [
+      "api",
+      "server"
+    ]
+  },
+  {
+    "objectID": "api/server.html#create_controller_server",
+    "href": "api/server.html#create_controller_server",
+    "title": "server",
+    "section": "",
+    "text": "create_controller_server(\n   controller: Controller,\n   prepend_method_group: bool,\n   api_keys: Optional[List[str]]\n) -&gt; FastAPI\nGet the controller server instance.\nArguments: - controller (Controller): The controller to get the server for.\nReturns: FastAPI: The controller server instance.\n\n\nfrom ctrlstack import ctrl_cmd_method, ctrl_query_method, ctrl_method\n\nclass FooController(Controller):\n    @ctrl_cmd_method\n    def bar(self):\n        pass\n    \n    @ctrl_query_method\n    def baz(self, x: int) -&gt; str:\n        pass\n    \n    @ctrl_method(ControllerMethodType.QUERY, \"q\")\n    def qux(self):\n        pass\n    \napp = create_controller_server(FooController())\n\n\nassert _is_port_free(_find_free_port())",
+    "crumbs": [
+      "api",
+      "server"
+    ]
+  },
+  {
+    "objectID": "api/server.html#start_local_controller_server_process",
+    "href": "api/server.html#start_local_controller_server_process",
+    "title": "server",
+    "section": "start_local_controller_server_process",
+    "text": "start_local_controller_server_process\nstart_local_controller_server_process(\n   controller: Controller|Callable[[], Controller],\n   lockfile_path: str,\n   port: Optional[int]\n) -&gt; Tuple[int, int, bool]\nStart a local server for the given controller.\nArguments: - controller (Controller|Callable[[], Controller]): The controller or a callable that returns the controller to run. - lockfile_path (str): Path to the lockfile that stores the port and PID. - port (Optional[int]): The port to run the server on. If None, a free port will be found.",
+    "crumbs": [
+      "api",
+      "server"
+    ]
+  },
+  {
+    "objectID": "api/server.html#get_local_controller_server_status",
+    "href": "api/server.html#get_local_controller_server_status",
+    "title": "server",
+    "section": "get_local_controller_server_status",
+    "text": "get_local_controller_server_status\nget_local_controller_server_status(lockfile_path: str) -&gt; Tuple[int, int, bool]\nGet the status of the server from the lockfile.\nArguments: - lockfile_path (str): Path to the lockfile that stores the port and PID.\nReturns: Tuple[int, int, bool]: A tuple containing the port number, process ID, and a boolean indicating if the server is running.",
+    "crumbs": [
+      "api",
+      "server"
+    ]
+  },
+  {
+    "objectID": "api/server.html#check_local_controller_server_process",
+    "href": "api/server.html#check_local_controller_server_process",
+    "title": "server",
+    "section": "check_local_controller_server_process",
+    "text": "check_local_controller_server_process\ncheck_local_controller_server_process(\n   lockfile_path: str\n) -&gt; Tuple[Optional[int], Optional[int], bool]\nCheck if a local server process is running and return its port and PID.\nArguments: - lockfile_path (str): Path to the lockfile that stores the port and PID. - port (Optional[int]): The port to check. If None, the port from the lockfile will be used.\nReturns: Tuple[Optional[int], Optional[int], bool]: A tuple containing the port number, process ID, and a boolean indicating if the server is running.",
+    "crumbs": [
+      "api",
+      "server"
+    ]
+  },
+  {
+    "objectID": "api/server.html#stop_local_controller_server_process",
+    "href": "api/server.html#stop_local_controller_server_process",
+    "title": "server",
+    "section": "stop_local_controller_server_process",
+    "text": "stop_local_controller_server_process\nstop_local_controller_server_process(lockfile_path: str)",
+    "crumbs": [
+      "api",
+      "server"
+    ]
+  },
+  {
+    "objectID": "api/remote_controller.html",
+    "href": "api/remote_controller.html",
+    "title": "remote_controller",
+    "section": "",
+    "text": "Does FastAPI provide some kind of way of converting a set of args and kwargs into inputs to requests? That is, converting them into the params and json of requests.post and requests.get etc.\nI know FastAPI does some clever conversions here, and I’d like to replicate it. For instance, I know that if there is a Pydantic model in the arguments then it automatically means that you put it into json\nI basically want a function prepare_requests_args(kwargs) that gives me two dictionaries corresponding to params and json respectively\ndef example_func(a, b: int, c=\"default\", d: Optional[str]=None):\n    pass\n\nresult = map_args_with_signature_types(example_func, [10, 20], {\"d\": [1, 2, 3]})\nprint(result)\n\n{'a': (None, 10), 'b': (&lt;class 'int'&gt;, 20), 'c': (None, 'default'), 'd': (typing.Optional[str], [1, 2, 3])}\nclass FooModel(BaseModel):\n    name: str\n    value: int\n\ndef example_func(a, b: int, c: List[int], d: FooModel, e: Dict):\n    pass\n\nparams, body = prepare_requests_args(\n    example_func,\n    args=[],\n    kwargs={\n        'a': 10,\n        'b': 20,\n        'c': [1, 2, 3],\n        'd': FooModel(name=\"test\", value=42),\n        'e': {'key1': 'value1', 'key2': 'value2'}\n    }\n)\n\nprint(\"Params:\", params)\nprint(\"Body:\", body)\n\nParams: {'a': 10, 'b': 20}\nBody: {'c': [1, 2, 3], 'd': {'name': 'test', 'value': 42}, 'e': {'key1': 'value1', 'key2': 'value2'}}",
+    "crumbs": [
+      "api",
+      "remote_controller"
+    ]
+  },
+  {
+    "objectID": "api/remote_controller.html#remotecontroller",
+    "href": "api/remote_controller.html#remotecontroller",
+    "title": "remote_controller",
+    "section": "RemoteController",
+    "text": "RemoteController\nInherits from: Controller\n\n\nMethods\n\n\ninit\n__init__(self, url: str, api_key: Optional[str])\n\n\n\nset_url\nset_url(self, url: str)\n\n\n\ninit_subclass\n__init_subclass__(\n   cls,\n   base_controller_cls: Type[Controller],\n   prepend_method_group: bool,\n   **kwargs\n)",
+    "crumbs": [
+      "api",
+      "remote_controller"
+    ]
+  },
+  {
+    "objectID": "api/remote_controller.html#create_remote_controller",
+    "href": "api/remote_controller.html#create_remote_controller",
+    "title": "remote_controller",
+    "section": "create_remote_controller",
+    "text": "create_remote_controller\ncreate_remote_controller(\n   base_controller_cls: Type[Controller],\n   url: str,\n   api_key: Optional[str]\n) -&gt; RemoteController\n\n\n# Check that the argument sets of RemoteController.__init__ and create_remote_controller match\nargset1 = set(p.name for p in inspect.signature(RemoteController.__init__).parameters.values())\nargset1.remove('self')\nargset2 = set(p.name for p in inspect.signature(create_remote_controller).parameters.values())\nargset2.remove('base_controller_cls')\nassert argset1 == argset2\n\n\nfrom ctrlstack import ctrl_cmd_method, ctrl_query_method, ctrl_method\n\nclass FooController(Controller):\n    @ctrl_cmd_method\n    def bar(self):\n        pass\n    \n    @ctrl_query_method\n    def baz(self, x: int) -&gt; str:\n        pass\n    \n    @ctrl_method(ControllerMethodType.QUERY, \"q\")\n    def qux(self):\n        pass\n\nfoo_remote_controller = create_remote_controller(FooController, url=\"http://localhost:8000\")\n\n\nfoo_remote_controller.baz?",
+    "crumbs": [
+      "api",
+      "remote_controller"
+    ]
+  }
+]
