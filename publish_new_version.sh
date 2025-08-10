@@ -1,6 +1,8 @@
 nbl export
 nbl clean
 
+sh ./update_docs.sh
+
 nbl render-docs -o docs
 git add docs
 git commit -m "chore: Update docs"
