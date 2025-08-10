@@ -45,6 +45,9 @@ def create_controller_server(controller: Controller, prepend_method_group: bool=
     Returns:
         FastAPI: The controller server instance.
     """
+    if not isinstance(controller, Controller):
+        raise TypeError("The controller must be an instance of ctrlstack.Controller")
+    
     if api_keys is None:
         app = FastAPI()
     else:

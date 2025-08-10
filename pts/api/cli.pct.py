@@ -35,6 +35,9 @@ def create_controller_cli(controller: Controller, prepend_method_group: bool=Fal
     Returns:
         FastAPI: The controller server instance.
     """
+    if not isinstance(controller, Controller):
+        raise TypeError("The controller must be an instance of ctrlstack.Controller")
+    
     app = typer.Typer(invoke_without_command=True)
     
     @app.callback()

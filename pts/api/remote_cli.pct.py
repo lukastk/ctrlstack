@@ -59,6 +59,8 @@ def create_remote_controller_cli(
     controller: Controller|Callable[[], Controller] = None,
     local_server_start_timeout: float = 10.0
 ) -> typer.Typer:
+    if not issubclass(base_controller_cls, Controller):
+        raise TypeError("base_controller_cls must be a subclass of ctrlstack.Controller")
     if local_mode and url is not None:
         raise ValueError("If 'local_mode' is True then 'url' must be None.")
     if not local_mode and controller is not None:

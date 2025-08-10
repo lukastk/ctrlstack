@@ -163,6 +163,9 @@ class RemoteController(Controller):
     def __init_subclass__(cls, base_controller_cls: Type[Controller], prepend_method_group: bool=True, **kwargs):
         super().__init_subclass__(**kwargs)
         
+        if not issubclass(base_controller_cls, Controller):
+            raise TypeError("base_controller_cls must be a subclass of ctrlstack.Controller")
+        
         def register_method(method: Callable, route: str):
             @ctrl_method(method_type=method._controller_method_type, group=method._controller_method_group)
             @functools.wraps(method)
@@ -223,6 +226,3 @@ class FooController(Controller):
         pass
 
 foo_remote_controller = create_remote_controller(FooController, url="http://localhost:8000")
-
-# %%
-# foo_remote_controller.baz?
