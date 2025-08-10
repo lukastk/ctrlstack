@@ -134,7 +134,7 @@
     "href": "api/cli.html",
     "title": "cli",
     "section": "",
-    "text": "create_controller_cli(\n   controller: Controller,\n   prepend_method_group: bool\n) -&gt; typer.Typer\nGet the controller server instance.\nArguments: - controller (Controller): The controller to get the server for.\nReturns: FastAPI: The controller server instance.\n\n\nfrom ctrlstack import ctrl_cmd_method, ctrl_query_method, ctrl_method\n\nclass FooController(Controller):\n    @ctrl_cmd_method\n    def bar(self):\n        pass\n    \n    @ctrl_query_method\n    def baz(self, x: int) -&gt; str:\n        pass\n    \n    @ctrl_method(ControllerMethodType.QUERY, \"q\")\n    def qux(self):\n        pass\n    \napp = create_controller_cli(FooController())",
+    "text": "assert _is_dict_annotation(dict)\nassert _is_dict_annotation(Dict)\nassert _is_dict_annotation(Dict[str, int])\nassert _is_dict_annotation(Optional[Dict[str, str]])\nassert _unwrap_optional(Dict[str, int]) == Dict[str, int]\nassert _unwrap_optional(Optional[Dict[str, int]]) == Dict[str, int]\nassert _unwrap_optional(str) == str\nassert _unwrap_optional(Optional[str]) == str\nassert _unwrap_optional(None) == None\nclass MyArg(BaseModel):\n    name: str\n    value: int\n\n@_make_typer_compatible_func\ndef foo(arg1: MyArg, arg2: dict, arg3: int):\n    print(arg1.model_dump())\n    print(arg2)\n    print(arg3)\n\nfoo(\n    arg1='{\"name\": \"test\", \"value\": 42}',\n    arg2='{\"key\": \"value\"}',\n    arg3=123\n)\n\n{'name': 'test', 'value': 42}\n{'key': 'value'}\n123",
     "crumbs": [
       "api",
       "cli"
@@ -144,8 +144,8 @@
     "objectID": "api/cli.html#create_controller_cli",
     "href": "api/cli.html#create_controller_cli",
     "title": "cli",
-    "section": "",
-    "text": "create_controller_cli(\n   controller: Controller,\n   prepend_method_group: bool\n) -&gt; typer.Typer\nGet the controller server instance.\nArguments: - controller (Controller): The controller to get the server for.\nReturns: FastAPI: The controller server instance.\n\n\nfrom ctrlstack import ctrl_cmd_method, ctrl_query_method, ctrl_method\n\nclass FooController(Controller):\n    @ctrl_cmd_method\n    def bar(self):\n        pass\n    \n    @ctrl_query_method\n    def baz(self, x: int) -&gt; str:\n        pass\n    \n    @ctrl_method(ControllerMethodType.QUERY, \"q\")\n    def qux(self):\n        pass\n    \napp = create_controller_cli(FooController())",
+    "section": "create_controller_cli",
+    "text": "create_controller_cli\ncreate_controller_cli(\n   controller: Controller,\n   prepend_method_group: bool\n) -&gt; typer.Typer\nGet the controller server instance.\nArguments: - controller (Controller): The controller to get the server for.\nReturns: FastAPI: The controller server instance.\n\n\nfrom ctrlstack import ctrl_cmd_method, ctrl_query_method, ctrl_method\n\nclass FooController(Controller):\n    @ctrl_cmd_method\n    def bar(self):\n        pass\n    \n    @ctrl_cmd_method\n    def bar2(self, arg: dict):\n        print(f\"Executing bar2 command with arg: {arg}\")\n    \n    @ctrl_query_method\n    def baz(self, x: int) -&gt; str:\n        pass\n    \n    @ctrl_method(ControllerMethodType.QUERY, \"q\")\n    def qux(self):\n        pass\n    \napp = create_controller_cli(FooController())\n\n\nfrom typer.testing import CliRunner\nrunner = CliRunner()\nresult = runner.invoke(app, [\"bar2\", '{\"key\": \"value\"}'])\nprint(result.stdout)\n\nExecuting bar2 command with arg: {'key': 'value'}",
     "crumbs": [
       "api",
       "cli"
