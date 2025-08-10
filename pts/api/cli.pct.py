@@ -20,12 +20,12 @@ import asyncio
 
 # %%
 #|hide
-show_doc(this_module.create_ctrl_cli)
+show_doc(this_module.create_controller_cli)
 
 
 # %%
 #|export
-def create_ctrl_cli(controller: Controller, prepend_method_group: bool=False) -> typer.Typer:
+def create_controller_cli(controller: Controller, prepend_method_group: bool=False) -> typer.Typer:
     """
     Get the controller server instance.
     
@@ -87,4 +87,4 @@ class FooController(Controller):
     def qux(self):
         pass
     
-app = create_ctrl_cli(FooController())
+app = create_controller_cli(FooController())

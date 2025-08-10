@@ -35,7 +35,7 @@ def _construct_route(method: Callable, method_name:Optional[str]=None, prepend_m
 
 # %%
 #|export
-def create_ctrl_server(controller: Controller, prepend_method_group: bool=True, api_keys: Optional[List[str]] = None) -> FastAPI:
+def create_controller_server(controller: Controller, prepend_method_group: bool=True, api_keys: Optional[List[str]] = None) -> FastAPI:
     """
     Get the controller server instance.
     
@@ -104,7 +104,7 @@ class FooController(Controller):
     def qux(self):
         pass
     
-app = create_ctrl_server(FooController())
+app = create_controller_server(FooController())
 
 # %%
 #|exporti
@@ -179,7 +179,7 @@ def start_local_controller_server_process(
             raise ValueError(f"Invalid lockfile format: {lockfile_path}")
         
     controller = controller() if callable(controller) else controller
-    app = create_ctrl_server(controller)
+    app = create_controller_server(controller)
     
     with open(lockfile_path, "w") as f:
         f.write(f"{port}\n{os.getpid()}\n")

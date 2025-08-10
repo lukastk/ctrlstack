@@ -35,8 +35,8 @@ import ctrlstack as proj
 #
 # ```python
 # from ctrlstack import Controller, ctrl_cmd_method, ctrl_query_method
-# from ctrlstack.server import create_ctrl_server
-# from ctrlstack.cli import create_ctrl_cli
+# from ctrlstack.server import create_controller_server
+# from ctrlstack.cli import create_controller_cli
 #
 # class MyController(Controller):
 #     @ctrl_query_method
@@ -48,10 +48,10 @@ import ctrlstack as proj
 #         return f"Received: {message}"
 #
 # # Create FastAPI app
-# server_app = create_ctrl_server(MyController())
+# server_app = create_controller_server(MyController())
 #
 # # Create CLI app  
-# cli_app = create_ctrl_cli(MyController())
+# cli_app = create_controller_cli(MyController())
 #
 # if __name__ == "__main__":
 #     cli_app()
@@ -142,7 +142,7 @@ import ctrlstack as proj
 #
 # ```python
 # # Server with API key authentication
-# app = create_ctrl_server(
+# app = create_controller_server(
 #     MyController(), 
 #     api_keys=["secret-key-1", "secret-key-2"]
 # )

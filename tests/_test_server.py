@@ -1,5 +1,5 @@
 from ctrlstack import Controller, ControllerMethodType, ctrl_cmd_method, ctrl_query_method, ctrl_method
-from ctrlstack.server import create_ctrl_server
+from ctrlstack.server import create_controller_server
 from pydantic import BaseModel
 from typing import List, Dict, Any, Tuple, Optional
 
@@ -34,4 +34,4 @@ class FooController(Controller):
     def qux(self):
         return "qux"
     
-app = create_ctrl_server(FooController())
+app = create_controller_server(FooController())

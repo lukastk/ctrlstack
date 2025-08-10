@@ -20,9 +20,9 @@ import subprocess
 import sys
 import time, math
 from ctrlstack import Controller, ControllerMethodType
-from ctrlstack.cli import create_ctrl_cli
-from ctrlstack.server import create_ctrl_server, start_local_controller_server_process, check_local_controller_server_process, stop_local_controller_server_process, _find_free_port
-from ctrlstack.remote_controller import create_remote_ctrl
+from ctrlstack.cli import create_controller_cli
+from ctrlstack.server import create_controller_server, start_local_controller_server_process, check_local_controller_server_process, stop_local_controller_server_process, _find_free_port
+from ctrlstack.remote_controller import create_remote_controller
 
 # %% [markdown]
 # - Create a function that can start a fastapi server locally, but only if a lock file doesnt exist.
@@ -49,7 +49,7 @@ assert is_pickleable(foo)
 
 # %%
 #|export
-def create_remote_ctrl_cli(
+def create_remote_controller_cli(
     base_controller_cls: Type[Controller],
     url: Optional[str] = None,
     api_key: Optional[str] = None,
@@ -66,8 +66,8 @@ def create_remote_ctrl_cli(
     if local_mode:
         url = "http://localhost" # Placeholder
         
-    remote_controller = create_remote_ctrl(base_controller_cls, url, api_key)
-    cli_app = create_ctrl_cli(remote_controller)
+    remote_controller = create_remote_controller(base_controller_cls, url, api_key)
+    cli_app = create_controller_cli(remote_controller)
     
     if local_mode:
         controller = controller or base_controller_cls()
@@ -149,9 +149,9 @@ class FooController(Controller):
     def qux(self):
         pass
     
-remote_controller = create_remote_ctrl(FooController, "local")
+remote_controller = create_remote_controller(FooController, "local")
     
-remote_cli_app = create_remote_ctrl_cli(
+remote_cli_app = create_remote_controller_cli(
     FooController,
     local_mode=True,
     lockfile_path="/tmp/ctrlstack.lock",

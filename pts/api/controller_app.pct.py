@@ -85,12 +85,12 @@ class ControllerApp:
         return self._controller_cls()
     
     def crreate_server_app(self, *args, **kwargs) -> 'FastAPI':
-        from ctrlstack.server import create_ctrl_server
-        return create_ctrl_server(self.get_controller(), *args, **kwargs)
+        from ctrlstack.server import create_controller_server
+        return create_controller_server(self.get_controller(), *args, **kwargs)
     
     def create_cli_app(self, *args, **kwargs) -> 'ClickApp':
-        from ctrlstack.cli import create_ctrl_cli
-        return create_ctrl_cli(self.get_controller(), *args, **kwargs)
+        from ctrlstack.cli import create_controller_cli
+        return create_controller_cli(self.get_controller(), *args, **kwargs)
 
 
 # %%

@@ -189,7 +189,7 @@ class RemoteController(Controller):
 
 # %%
 #|export
-def create_remote_ctrl(
+def create_remote_controller(
     base_controller_cls: Type[Controller],
     url: str,
     api_key: Optional[str] = None,
@@ -202,7 +202,7 @@ def create_remote_ctrl(
 # Check that the argument sets of RemoteController.__init__ and create_remote_controller match
 argset1 = set(p.name for p in inspect.signature(RemoteController.__init__).parameters.values())
 argset1.remove('self')
-argset2 = set(p.name for p in inspect.signature(create_remote_ctrl).parameters.values())
+argset2 = set(p.name for p in inspect.signature(create_remote_controller).parameters.values())
 argset2.remove('base_controller_cls')
 assert argset1 == argset2
 
@@ -222,7 +222,7 @@ class FooController(Controller):
     def qux(self):
         pass
 
-foo_remote_controller = create_remote_ctrl(FooController, url="http://localhost:8000")
+foo_remote_controller = create_remote_controller(FooController, url="http://localhost:8000")
 
 # %%
 # foo_remote_controller.baz?

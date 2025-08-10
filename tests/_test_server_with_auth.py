@@ -1,5 +1,5 @@
 from ctrlstack import Controller, ControllerMethodType, ctrl_cmd_method, ctrl_query_method, ctrl_method
-from ctrlstack.server import create_ctrl_server
+from ctrlstack.server import create_controller_server
 from pydantic import BaseModel
 
 class FooMessage(BaseModel):
@@ -22,4 +22,4 @@ api_keys = [
     "my-secret-key"
 ]
     
-app = create_ctrl_server(FooController(), api_keys=api_keys)
+app = create_controller_server(FooController(), api_keys=api_keys)

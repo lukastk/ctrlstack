@@ -1,5 +1,5 @@
 from ctrlstack import Controller, ControllerMethodType, ctrl_cmd_method, ctrl_query_method, ctrl_method
-from ctrlstack.cli import create_ctrl_cli
+from ctrlstack.cli import create_controller_cli
 
 class FooController(Controller):
     @ctrl_cmd_method
@@ -14,7 +14,7 @@ class FooController(Controller):
     def qux(self):
         return "qux"
     
-app = create_ctrl_cli(FooController())
+app = create_controller_cli(FooController())
 
 if __name__ == "__main__":
     app()

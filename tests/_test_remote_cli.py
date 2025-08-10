@@ -1,5 +1,5 @@
 from ctrlstack import Controller, ControllerMethodType, ctrl_cmd_method, ctrl_query_method, ctrl_method
-from ctrlstack.remote_cli import create_remote_ctrl_cli
+from ctrlstack.remote_cli import create_remote_controller_cli
 
 class FooController(Controller):
     @ctrl_cmd_method
@@ -14,7 +14,7 @@ class FooController(Controller):
     def qux(self):
         return "qux"
     
-app = create_remote_ctrl_cli(
+app = create_remote_controller_cli(
     FooController,
     local_mode=True,
     lockfile_path="/tmp/ctrlstack.lock",
