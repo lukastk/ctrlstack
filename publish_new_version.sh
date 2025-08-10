@@ -3,11 +3,6 @@ nbl clean
 
 sh ./update_docs.sh
 
-nbl render-docs -o docs
-git add docs
-git commit -m "chore: Update docs"
-nbl readme
-
 git push
 
 latest_version=$(git describe --tags $(git rev-list --tags --max-count=1))
