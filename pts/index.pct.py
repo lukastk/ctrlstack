@@ -1,7 +1,7 @@
 # %% [markdown]
 # # ctrlstack
 #
-# > A Python framework for creating unified controller interfaces that can be exposed as both CLI applications and FastAPI web services.
+# > A Python library for creating unified controller interfaces that can be exposed as both CLI applications and FastAPI web services.
 
 # %%
 #|hide
