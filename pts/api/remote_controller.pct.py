@@ -149,13 +149,16 @@ print("Body:", body)
 #|export
 class RemoteController(Controller):
     def __init__(self, url: str, api_key: Optional[str] = None):
-        self._url = url.rstrip('/')
+        self.set_url(url)
         self._api_key = api_key
         
         if self._api_key:
             self._headers = {"X-API-Key": self._api_key}
         else:
             self._headers = {}
+            
+    def set_url(self, url: str):
+        self._url = url.lstrip('/')
     
     def __init_subclass__(cls, base_controller_cls: Type[Controller], prepend_method_group: bool=True, **kwargs):
         super().__init_subclass__(**kwargs)
@@ -186,15 +189,22 @@ class RemoteController(Controller):
 
 # %%
 #|export
-def create_remote_controller(
+def create_remote_ctrl(
     base_controller_cls: Type[Controller],
     url: str,
     api_key: Optional[str] = None,
 ) -> RemoteController:
-    class _RemoteController(RemoteController, base_controller_cls=base_controller_cls):
-        pass
+    class _RemoteController(RemoteController, base_controller_cls=base_controller_cls): pass
     return _RemoteController(url, api_key)
 
+
+# %%
+# Check that the argument sets of RemoteController.__init__ and create_remote_controller match
+argset1 = set(p.name for p in inspect.signature(RemoteController.__init__).parameters.values())
+argset1.remove('self')
+argset2 = set(p.name for p in inspect.signature(create_remote_ctrl).parameters.values())
+argset2.remove('base_controller_cls')
+assert argset1 == argset2
 
 # %%
 from ctrlstack import ctrl_cmd_method, ctrl_query_method, ctrl_method
@@ -212,4 +222,7 @@ class FooController(Controller):
     def qux(self):
         pass
 
-foo_remote_controller = create_remote_controller(FooController, url="http://localhost:8000")
+foo_remote_controller = create_remote_ctrl(FooController, url="http://localhost:8000")
+
+# %%
+# foo_remote_controller.baz?

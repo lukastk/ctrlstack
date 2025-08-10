@@ -25,7 +25,7 @@ show_doc(this_module.create_ctrl_cli)
 
 # %%
 #|export
-def create_ctrl_cli(controller: Controller, entrypoint: Optional[Callable]=None, prepend_method_group: bool=False) -> typer.Typer:
+def create_ctrl_cli(controller: Controller, prepend_method_group: bool=False) -> typer.Typer:
     """
     Get the controller server instance.
     
@@ -37,13 +37,10 @@ def create_ctrl_cli(controller: Controller, entrypoint: Optional[Callable]=None,
     """
     app = typer.Typer(invoke_without_command=True)
     
-    if entrypoint is not None:
-        app.callback()(entrypoint)
-    else:
-        @app.callback()
-        def entrypoint(ctx: typer.Context):
-            if ctx.invoked_subcommand is None:
-                typer.echo(ctx.get_help())
+    @app.callback()
+    def entrypoint(ctx: typer.Context):
+        if ctx.invoked_subcommand is None:
+            typer.echo(ctx.get_help())
                 
     def register_func(func: Callable, cmd_name: str):
         if inspect.iscoroutinefunction(func):

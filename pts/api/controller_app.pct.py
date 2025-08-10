@@ -32,15 +32,13 @@ def _add_method_to_class(func: Callable, controller_cls: Type[Controller], name:
     # Keep metadata, but fix what inspect sees
     functools.update_wrapper(method, func)
 
-    # Build a signature that includes `self` first
+    # Build a signature that excludes `self` since the method will be bound to the instance
     orig_sig = inspect.signature(func)
-    if orig_sig.parameters and list(orig_sig.parameters.keys())[0] != "self":
-        params = (
-            inspect.Parameter("self", inspect.Parameter.POSITIONAL_OR_KEYWORD),
-            *orig_sig.parameters.values(),
-        )
-    else:
-        params = orig_sig.parameters.values()
+    params = list(orig_sig.parameters.values())
+    
+    # Remove 'self' parameter if it exists (it will be handled by the bound method)
+    if params and params[0].name in ('self', 'cls'):
+        params = params[1:]
     
     method.__signature__ = inspect.Signature(
         parameters=params,
