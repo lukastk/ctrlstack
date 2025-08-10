@@ -34,4 +34,8 @@ class FooController(Controller):
     def qux(self):
         return "qux"
     
+    @ctrl_method(ControllerMethodType.QUERY, "")
+    def qux2(self):
+        return "qux2"
+    
 app = create_controller_server(FooController())
