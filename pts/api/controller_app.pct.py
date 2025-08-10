@@ -86,11 +86,11 @@ class ControllerApp:
     def get_controller(self) -> Type[Controller]:
         return self._controller_cls()
     
-    def get_server_app(self, *args, **kwargs) -> 'FastAPI':
+    def crreate_server_app(self, *args, **kwargs) -> 'FastAPI':
         from ctrlstack.server import create_ctrl_server
         return create_ctrl_server(self.get_controller(), *args, **kwargs)
     
-    def get_cli_app(self, *args, **kwargs) -> 'ClickApp':
+    def create_cli_app(self, *args, **kwargs) -> 'ClickApp':
         from ctrlstack.cli import create_ctrl_cli
         return create_ctrl_cli(self.get_controller(), *args, **kwargs)
 
@@ -119,5 +119,5 @@ assert capp.get_controller().foo() == "Hello, World!"
 assert capp.get_controller().bar_cmd() == "Hello, World!"
 assert capp.get_controller().baz_query() == "Hello, World!"
 
-cli_app = capp.get_cli_app()
-server_app = capp.get_server_app()
+cli_app = capp.create_cli_app()
+server_app = capp.crreate_server_app()

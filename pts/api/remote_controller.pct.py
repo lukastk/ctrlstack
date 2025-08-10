@@ -186,7 +186,7 @@ class RemoteController(Controller):
 
 # %%
 #|export
-def get_remote_controller(
+def create_remote_controller(
     base_controller_cls: Type[Controller],
     url: str,
     api_key: Optional[str] = None,
@@ -212,4 +212,4 @@ class FooController(Controller):
     def qux(self):
         pass
 
-foo_remote_controller = get_remote_controller(FooController, url="http://localhost:8000")
+foo_remote_controller = create_remote_controller(FooController, url="http://localhost:8000")
