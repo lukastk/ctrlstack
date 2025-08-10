@@ -1,6 +1,6 @@
 # ctrlstack
 
-> A Python framework for creating unified controller interfaces that can be exposed as both CLI applications and FastAPI web services.
+> A Python library for creating unified controller interfaces that can be exposed as both CLI applications and FastAPI web services.
 
 <!-- #region -->
 Define your business logic once in a Controller class, and automatically generate both command-line tools and REST APIs from the same codebase.
