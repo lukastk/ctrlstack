@@ -57,9 +57,10 @@ nbl export --reverse          # Sync pts changes back to nbs
 nbl clean                     # Clean notebook outputs
 nbl test                      # Test that all notebooks execute without errors
 
-# Testing
-# Tests are in pts/tests/ as .pct.py files, exported to src/tests/
-uv run jupyter execute nbs/tests/test_cli.ipynb --kernel_name=ctrlstack
+# Testing (requires nbl export first to generate src/tests/)
+uv run pytest                 # Run all tests
+uv run pytest src/tests/test_cli.py  # Run a single test file
+uv run pytest -k test_bar     # Run tests matching a pattern
 
 # Dependencies
 uv add <package>              # Add a dependency

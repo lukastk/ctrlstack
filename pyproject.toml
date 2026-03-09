@@ -27,8 +27,12 @@ include = [
 dev = [
     "jupyterlab>=4.4.0",
     "nblite>=0.6.0",
+    "pytest>=9.0.2",
     "twine>=6.1.0",
 ]
+
+[tool.pytest.ini_options]
+testpaths = ["src/tests"]
 
 [project.scripts]
 ctrlstack = "ctrlstack.cli.app:app"

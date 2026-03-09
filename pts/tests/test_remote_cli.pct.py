@@ -1,74 +1,97 @@
-# ---
-# jupyter:
-#   kernelspec:
-#     display_name: ctrlstack
-#     language: python
-#     name: python3
-# ---
-
 # %% [markdown]
 # # test_remote_cli
 
 # %%
+#|default_exp test_remote_cli
+
+# %%
 #|hide
-import nblite; from nblite import show_doc; nblite.nbl_export()
+import nblite; nblite.nbl_export()
 
 # %%
-import requests
+#|export
+import pytest
 import subprocess
-import time
-import json
-from _test_server import FooController, FooMessage, BarMessage
+import sys
+import textwrap
+from ctrlstack.server import stop_local_controller_server_process
 
 # %%
-!python _test_remote_cli.py stop-local-server > /dev/null
-!python _test_remote_cli.py
+#|export
+_REMOTE_CLI_SCRIPT = textwrap.dedent('''\
+    from ctrlstack import Controller, ControllerMethodType, ctrl_cmd_method, ctrl_query_method, ctrl_method
+    from ctrlstack.remote_cli import create_remote_controller_cli
+
+    class FooController(Controller):
+        @ctrl_cmd_method
+        async def bar(self):
+            return "bar"
+
+        @ctrl_query_method
+        def baz(self, x: int) -> str:
+            return f"baz {{x}}"
+
+        @ctrl_method(ControllerMethodType.QUERY, "q")
+        def qux(self):
+            return "qux"
+
+    app = create_remote_controller_cli(
+        FooController,
+        local_mode=True,
+        lockfile_path="{lockfile_path}",
+    )
+
+    if __name__ == "__main__":
+        app()
+''')
 
 # %%
-%%capture res
-!python _test_remote_cli.py get-server-status
+#|export
+@pytest.fixture()
+def remote_cli(tmp_path):
+    """Create a temporary remote CLI script and lockfile, with cleanup."""
+    lockfile = tmp_path / "ctrlstack_test.lock"
+    script = tmp_path / "remote_cli.py"
+    script.write_text(_REMOTE_CLI_SCRIPT.format(lockfile_path=str(lockfile)))
+    yield str(script), str(lockfile)
+    # Cleanup: stop server if running
+    stop_local_controller_server_process(str(lockfile))
+
+def _run_cli(script_path: str, *args: str) -> subprocess.CompletedProcess:
+    return subprocess.run(
+        [sys.executable, script_path] + list(args),
+        capture_output=True, text=True, timeout=30,
+    )
 
 # %%
-assert res.stdout.strip() == 'No local server is running.'
+#|export
+def test_no_server_initially(remote_cli):
+    script, lockfile = remote_cli
+    res = _run_cli(script, "get-server-status")
+    assert res.stdout.strip() == "No local server is running."
 
-# %%
-%%capture res
-!python _test_remote_cli.py bar
+def test_server_lifecycle(remote_cli):
+    script, lockfile = remote_cli
 
-# %%
-assert res.stdout.strip() == 'bar'
+    # Auto-start via a command
+    res = _run_cli(script, "bar")
+    assert res.stdout.strip() == "bar"
 
-# %%
-%%capture res
-!python _test_remote_cli.py baz 123
+    # Server should now be running
+    res = _run_cli(script, "get-server-status")
+    assert res.stdout.strip().startswith("Local server is running")
 
-# %%
-assert res.stdout.strip() == 'baz 123'
+    # Other commands should work
+    res = _run_cli(script, "baz", "123")
+    assert res.stdout.strip() == "baz 123"
 
-# %%
-%%capture res
-!python _test_remote_cli.py qux
+    res = _run_cli(script, "qux")
+    assert res.stdout.strip() == "qux"
 
-# %%
-assert res.stdout.strip() == 'qux'
+    # Stop the server
+    res = _run_cli(script, "stop-local-server")
+    assert res.stdout.strip().startswith("Stopped local server")
 
-# %%
-%%capture res
-!python _test_remote_cli.py get-server-status
-
-# %%
-assert res.stdout.strip().startswith('Local server is running')
-
-# %%
-%%capture res
-!python _test_remote_cli.py stop-local-server
-
-# %%
-assert res.stdout.strip().startswith('Stopped local server')
-
-# %%
-%%capture res
-!python _test_remote_cli.py stop-local-server
-
-# %%
-assert res.stdout.strip().startswith('No local server running')
+    # Stopping again should say no server
+    res = _run_cli(script, "stop-local-server")
+    assert res.stdout.strip().startswith("No local server running")
