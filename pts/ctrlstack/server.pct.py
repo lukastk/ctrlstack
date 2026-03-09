@@ -222,23 +222,22 @@ def check_local_controller_server_process(
     lockfile_path: str,
 ) -> Tuple[Optional[int], Optional[int], bool]:
     """
-    Check if a local server process is running and return its port and PID.
-    
+    Check if a local server process is running and accepting connections.
+
     Args:
         lockfile_path (str): Path to the lockfile that stores the port and PID.
-        port (Optional[int]): The port to check. If None, the port from the lockfile will be used.
-        
+
     Returns:
-        Tuple[Optional[int], Optional[int], bool]: A tuple containing the port number, process ID, and a boolean indicating if the server is running.
+        Tuple[Optional[int], Optional[int], bool]: A tuple containing the port number, process ID, and a boolean indicating if the server is running and accepting connections.
     """
     if Path(lockfile_path).exists():
         lines = Path(lockfile_path).read_text().splitlines()
         if len(lines) == 2:
             _port = int(lines[0].strip())
             pid = int(lines[1].strip())
-            
-            # Check if the PID is still running
-            if _pid_exists(pid):
+
+            # Check if the PID is still running and the port is accepting connections
+            if _pid_exists(pid) and not _is_port_free(_port):
                 return _port, pid, True
         else:
             raise ValueError(f"Invalid lockfile format: {lockfile_path}")
