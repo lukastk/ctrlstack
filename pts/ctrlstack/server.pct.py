@@ -26,7 +26,7 @@ from ctrlstack import Controller, ControllerMethodType
 import functools
 from typing import Callable, Optional, List, Tuple, Dict, Any
 import inspect
-import signal, os
+import signal, os, time
 from pathlib import Path
 
 # %%
@@ -149,6 +149,28 @@ def _pid_exists(pid: int) -> bool:
         return True
 
 # %%
+#|exporti
+def _read_lockfile(lockfile_path: str) -> Optional[Tuple[int, int]]:
+    """Read and parse a lockfile. Returns (port, pid) or None if lockfile doesn't exist."""
+    path = Path(lockfile_path)
+    if not path.exists():
+        return None
+    lines = path.read_text().splitlines()
+    if len(lines) != 2:
+        raise ValueError(f"Invalid lockfile format: {lockfile_path}")
+    return int(lines[0].strip()), int(lines[1].strip())
+
+def _write_lockfile(lockfile_path: str, port: int, pid: int):
+    """Write port and PID to lockfile."""
+    Path(lockfile_path).write_text(f"{port}\n{pid}\n")
+
+def _delete_lockfile(lockfile_path: str):
+    """Delete lockfile if it exists."""
+    path = Path(lockfile_path)
+    if path.exists():
+        path.unlink()
+
+# %%
 assert _is_port_free(_find_free_port())
 
 # %%
@@ -160,61 +182,27 @@ def start_local_controller_server_process(
 ) -> Tuple[int, int, bool]:
     """
     Start a local server for the given controller.
-    
+
     Args:
         controller (Controller|Callable[[], Controller]): The controller or a callable that returns the controller to run.
         lockfile_path (str): Path to the lockfile that stores the port and PID.
         port (Optional[int]): The port to run the server on. If None, a free port will be found.
     """
+    info = _read_lockfile(lockfile_path)
+    if info is not None:
+        existing_port, pid = info
+        if _pid_exists(pid):
+            return existing_port, pid, False  # Already running, didn't start new
+        _delete_lockfile(lockfile_path)  # Stale lockfile, clean up
+
     if port is None:
         port = _find_free_port()
-    
-    if Path(lockfile_path).exists():
-        lines = Path(lockfile_path).read_text().splitlines()
-        if len(lines) == 2:
-            _port = int(lines[0].strip())
-            pid = int(lines[1].strip())
-            
-            # Check if the PID is still running
-            if not _pid_exists(pid):
-                Path(lockfile_path).unlink()
-                start_local_controller_server_process(controller, lockfile_path, port)
-            
-            return _port, pid, False
-        else:
-            raise ValueError(f"Invalid lockfile format: {lockfile_path}")
-        
+
     controller = controller() if callable(controller) else controller
     app = create_controller_server(controller)
-    
-    with open(lockfile_path, "w") as f:
-        f.write(f"{port}\n{os.getpid()}\n")
-    
-    _start_fastapi_server(app, port=port)
 
-# %%
-#|export
-def get_local_controller_server_status(lockfile_path: str) -> Tuple[int, int, bool]:
-    """
-    Get the status of the server from the lockfile.
-    
-    Args:
-        lockfile_path (str): Path to the lockfile that stores the port and PID.
-        
-    Returns:
-        Tuple[int, int, bool]: A tuple containing the port number, process ID, and a boolean indicating if the server is running.
-    """
-    if not Path(lockfile_path).exists():
-        return None, None, False
-    
-    lines = Path(lockfile_path).read_text().splitlines()
-    if len(lines) != 2:
-        raise ValueError(f"Invalid lockfile format: {lockfile_path}")
-    
-    port = int(lines[0].strip())
-    pid = int(lines[1].strip())
-    
-    return port, pid, _pid_exists(pid)
+    _write_lockfile(lockfile_path, port, os.getpid())
+    _start_fastapi_server(app, port=port)  # Blocks (uvicorn.run)
 
 # %%
 #|export
@@ -230,34 +218,42 @@ def check_local_controller_server_process(
     Returns:
         Tuple[Optional[int], Optional[int], bool]: A tuple containing the port number, process ID, and a boolean indicating if the server is running and accepting connections.
     """
-    if Path(lockfile_path).exists():
-        lines = Path(lockfile_path).read_text().splitlines()
-        if len(lines) == 2:
-            _port = int(lines[0].strip())
-            pid = int(lines[1].strip())
-
-            # Check if the PID is still running and the port is accepting connections
-            if _pid_exists(pid) and not _is_port_free(_port):
-                return _port, pid, True
-        else:
-            raise ValueError(f"Invalid lockfile format: {lockfile_path}")
+    info = _read_lockfile(lockfile_path)
+    if info is None:
+        return None, None, False
+    port, pid = info
+    if _pid_exists(pid) and not _is_port_free(port):
+        return port, pid, True
+    # Stale lockfile: process dead or port not accepting connections
+    if not _pid_exists(pid):
+        _delete_lockfile(lockfile_path)
     return None, None, False
 
 # %%
 #|export
-def stop_local_controller_server_process(lockfile_path: str):
-    if Path(lockfile_path).exists():
-        lines = Path(lockfile_path).read_text().splitlines()
-        if len(lines) == 2:
-            port = int(lines[0].strip())
-            pid = int(lines[1].strip())
-            
-            # Check if the PID is still running
-            if _pid_exists(pid):
-                os.kill(pid, signal.SIGTERM)
-                return port, pid, True
-            
-            Path(lockfile_path).unlink()
-        else:
-            raise ValueError(f"Invalid lockfile format: {lockfile_path}")
-    return None, None, False
+def stop_local_controller_server_process(lockfile_path: str) -> Tuple[Optional[int], Optional[int], bool]:
+    """
+    Stop a local server process.
+
+    Args:
+        lockfile_path (str): Path to the lockfile that stores the port and PID.
+
+    Returns:
+        Tuple[Optional[int], Optional[int], bool]: A tuple containing the port number, process ID, and whether the process was running.
+    """
+    info = _read_lockfile(lockfile_path)
+    if info is None:
+        return None, None, False
+    port, pid = info
+    if not _pid_exists(pid):
+        _delete_lockfile(lockfile_path)
+        return None, None, False
+
+    os.kill(pid, signal.SIGTERM)
+    # Wait for process to exit
+    for _ in range(50):  # up to 5 seconds
+        if not _pid_exists(pid):
+            break
+        time.sleep(0.1)
+    _delete_lockfile(lockfile_path)
+    return port, pid, True

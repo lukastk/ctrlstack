@@ -29,7 +29,7 @@ import sys
 import time, math
 from ctrlstack import Controller, ControllerMethodType
 from ctrlstack.cli import create_controller_cli
-from ctrlstack.server import create_controller_server, start_local_controller_server_process, check_local_controller_server_process, stop_local_controller_server_process, _find_free_port
+from ctrlstack.server import create_controller_server, start_local_controller_server_process, check_local_controller_server_process, stop_local_controller_server_process
 from ctrlstack.remote_controller import create_remote_controller
 
 # %% [markdown]
@@ -106,13 +106,12 @@ def create_remote_controller_cli(
                     
         @cli_app.command()
         def restart_local_server(verbose: bool = True, port: Optional[int] = None):
-            port, pid, proc_existed = stop_local_controller_server_process(lockfile_path)
+            old_port, pid, proc_existed = stop_local_controller_server_process(lockfile_path)
             if verbose:
                 if proc_existed:
-                    typer.echo(f"Stopped local server on port {port} with PID {pid}.")
+                    typer.echo(f"Stopped local server on port {old_port} with PID {pid}.")
                 else:
                     typer.echo(f"No local server running.")
-            port = port or _find_free_port()
             start_local_controller_server_process(controller, lockfile_path, port=port)
                     
         @cli_app.callback()
