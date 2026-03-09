@@ -27,9 +27,10 @@ from typing import Type, Optional, Union, Dict, Any, Callable, List, Tuple
 import inspect
 import requests
 from typing import get_type_hints, get_args, get_origin
-from pydantic import BaseModel
-from dataclasses import is_dataclass, asdict
+from pydantic import BaseModel, TypeAdapter
 from ctrlstack.server import _construct_route
+from ctrlstack.type_utils import is_query_param_type, serialize_value
+from enum import Enum
 import json
 
 # %% [markdown]
@@ -75,7 +76,7 @@ print(result)
 #|exporti
 def prepare_requests_args(func: Callable, args: List[Any], kwargs: Dict[str, Any]) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     arg_map = map_args_with_signature_types(func, args, kwargs)
-    
+
     params = {}
     json_body = {}
     num_body_params = 0
@@ -83,45 +84,15 @@ def prepare_requests_args(func: Callable, args: List[Any], kwargs: Dict[str, Any
     for key, (sig_type, value) in arg_map.items():
         if value is None:
             continue
-        
-        is_optional = get_origin(sig_type) is Union and type(None) in get_args(sig_type)
-        if is_optional:
-            sig_type = [t for t in get_args(sig_type) if t is not None][0]
-        if sig_type is None:
-            sig_type = type(value)
-            
-        if get_origin(sig_type) in [list, tuple, dict]:
-            sig_type = get_origin(sig_type)
-            
-        # Pydantic models -> json
-        if issubclass(sig_type, BaseModel):
-            json_body[key] = value.model_dump()
-            num_body_params += 1
-        # Dataclasses -> json
-        elif is_dataclass(sig_type):
-            json_body[key] = asdict(value)
-            num_body_params += 1
-        # Dicts -> json
-        elif issubclass(sig_type, dict):
-            json_body[key] = value
-            num_body_params += 1
-        # Lists of models/dicts -> json
-        elif issubclass(sig_type, list) or issubclass(sig_type, tuple):
-            if all(isinstance(v, BaseModel) for v in value):
-                json_body[key] = [v.model_dump() for v in value]
-            elif all(is_dataclass(v) for v in value):
-                json_body[key] = [asdict(v) for v in value]
-            else:
-                json_body[key] = value
-            num_body_params += 1
-        # Primitives -> params
-        elif sig_type in [int, float, str, bool]:
-            params[key] = value
+        effective_type = sig_type if sig_type is not None else type(value)
+        if is_query_param_type(effective_type):
+            params[key] = value.value if isinstance(value, Enum) else value
         else:
-            params[key] = value  # Fallback for unsupported types
-        
+            json_body[key] = serialize_value(value, effective_type)
+            num_body_params += 1
+
     if num_body_params == 1:
-        json_body = next(iter(json_body.values())) # Unwrap single body param
+        json_body = next(iter(json_body.values()))  # FastAPI single-body-param convention
 
     return params, json_body
 
@@ -170,6 +141,9 @@ class RemoteController(Controller):
             raise TypeError("base_controller_cls must be a subclass of ctrlstack.Controller")
         
         def register_method(method: Callable, route: str):
+            return_hint = get_type_hints(method).get('return')
+            return_ta = TypeAdapter(return_hint) if return_hint and return_hint is not type(None) else None
+
             @ctrl_method(method_type=method._controller_method_type, group=method._controller_method_group)
             @functools.wraps(method)
             async def remote_method(self, *args, **kwargs):
@@ -183,7 +157,9 @@ class RemoteController(Controller):
                 if response.status_code != 200:
                     raise Exception(f"Error calling remote method {method.__name__}: {response.text}")
                 json_response = response.json()
-                if json_response:
+                if json_response is not None:
+                    if return_ta:
+                        return return_ta.validate_python(json_response)
                     return json_response
             _add_method_to_class(remote_method, cls, method.__name__, pass_self=True)
         

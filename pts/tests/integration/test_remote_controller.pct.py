@@ -23,19 +23,28 @@ import asyncio
 import threading
 import time
 import uvicorn
+from enum import Enum
 from pydantic import BaseModel
-from typing import List, Tuple, Optional
+from typing import List, Tuple, Optional, Dict
 from ctrlstack import Controller, ControllerMethodType, ctrl_cmd_method, ctrl_query_method, ctrl_method
 from ctrlstack.server import create_controller_server, _find_free_port
 from ctrlstack.remote_controller import create_remote_controller
 
 # %%
 #|export
+class Priority(Enum):
+    LOW = "low"
+    HIGH = "high"
+
 class FooMessage(BaseModel):
     body_msg: str
 
 class BarMessage(BaseModel):
     body_msg: str
+
+class NestedBody(BaseModel):
+    msg: FooMessage
+    tag: str
 
 class FooController(Controller):
     @ctrl_cmd_method
@@ -65,6 +74,42 @@ class FooController(Controller):
     @ctrl_method(ControllerMethodType.QUERY, "q")
     def qux(self):
         return "qux"
+
+    @ctrl_query_method
+    def echo_enum(self, priority: Priority) -> str:
+        return f"priority={priority.value}"
+
+    @ctrl_cmd_method
+    def nested_body(self, body: NestedBody) -> str:
+        return f"msg={body.msg.body_msg}, tag={body.tag}"
+
+    @ctrl_query_method
+    def return_model(self, name: str) -> FooMessage:
+        return FooMessage(body_msg=name)
+
+    @ctrl_query_method
+    def return_list_of_models(self) -> List[FooMessage]:
+        return [FooMessage(body_msg="a"), FooMessage(body_msg="b")]
+
+    @ctrl_query_method
+    def return_falsy_int(self) -> int:
+        return 0
+
+    @ctrl_query_method
+    def return_falsy_string(self) -> str:
+        return ""
+
+    @ctrl_query_method
+    def return_falsy_list(self) -> List[int]:
+        return []
+
+    @ctrl_query_method
+    def return_false(self) -> bool:
+        return False
+
+    @ctrl_cmd_method
+    def accept_dict(self, data: Dict[str, int]) -> str:
+        return f"sum={sum(data.values())}"
 
 # %%
 #|export
@@ -126,3 +171,43 @@ def test_baz(remote_ctrl):
 def test_qux(remote_ctrl):
     res = asyncio.run(remote_ctrl.qux())
     assert res == 'qux'
+
+def test_echo_enum(remote_ctrl):
+    res = asyncio.run(remote_ctrl.echo_enum(priority=Priority.HIGH))
+    assert res == 'priority=high'
+
+def test_nested_body(remote_ctrl):
+    body = NestedBody(msg=FooMessage(body_msg="hello"), tag="t1")
+    res = asyncio.run(remote_ctrl.nested_body(body=body))
+    assert res == 'msg=hello, tag=t1'
+
+def test_return_model(remote_ctrl):
+    res = asyncio.run(remote_ctrl.return_model(name="test"))
+    assert isinstance(res, FooMessage)
+    assert res.body_msg == "test"
+
+def test_return_list_of_models(remote_ctrl):
+    res = asyncio.run(remote_ctrl.return_list_of_models())
+    assert isinstance(res, list)
+    assert len(res) == 2
+    assert all(isinstance(m, FooMessage) for m in res)
+
+def test_return_falsy_int(remote_ctrl):
+    res = asyncio.run(remote_ctrl.return_falsy_int())
+    assert res == 0
+
+def test_return_falsy_string(remote_ctrl):
+    res = asyncio.run(remote_ctrl.return_falsy_string())
+    assert res == ""
+
+def test_return_falsy_list(remote_ctrl):
+    res = asyncio.run(remote_ctrl.return_falsy_list())
+    assert res == []
+
+def test_return_false(remote_ctrl):
+    res = asyncio.run(remote_ctrl.return_false())
+    assert res is False
+
+def test_accept_dict(remote_ctrl):
+    res = asyncio.run(remote_ctrl.accept_dict(data={"a": 1, "b": 2}))
+    assert res == 'sum=3'

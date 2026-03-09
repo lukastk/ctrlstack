@@ -20,19 +20,28 @@ import nblite; nblite.nbl_export()
 #|export
 import pytest
 import json
+from enum import Enum
 from pydantic import BaseModel
-from typing import List, Tuple, Optional
+from typing import List, Tuple, Optional, Dict
 from ctrlstack import Controller, ControllerMethodType, ctrl_cmd_method, ctrl_query_method, ctrl_method
 from ctrlstack.server import create_controller_server
 from fastapi.testclient import TestClient
 
 # %%
 #|export
+class Priority(Enum):
+    LOW = "low"
+    HIGH = "high"
+
 class FooMessage(BaseModel):
     body_msg: str
 
 class BarMessage(BaseModel):
     body_msg: str
+
+class NestedBody(BaseModel):
+    msg: FooMessage
+    tag: str
 
 class FooController(Controller):
     @ctrl_cmd_method
@@ -66,6 +75,26 @@ class FooController(Controller):
     @ctrl_method(ControllerMethodType.QUERY, "")
     def qux2(self):
         return "qux2"
+
+    @ctrl_query_method
+    def echo_enum(self, priority: Priority) -> str:
+        return f"priority={priority.value}"
+
+    @ctrl_cmd_method
+    def nested_body(self, body: NestedBody) -> str:
+        return f"msg={body.msg.body_msg}, tag={body.tag}"
+
+    @ctrl_query_method
+    def return_model(self, name: str) -> FooMessage:
+        return FooMessage(body_msg=name)
+
+    @ctrl_query_method
+    def return_falsy_int(self) -> int:
+        return 0
+
+    @ctrl_query_method
+    def return_false(self) -> bool:
+        return False
 
 fastapi_app = create_controller_server(FooController())
 client = TestClient(fastapi_app)
@@ -123,3 +152,30 @@ def test_qux2():
     response = client.get('/qux2')
     assert response.status_code == 200
     assert response.json() == 'qux2'
+
+def test_echo_enum():
+    response = client.get('/query/echo_enum', params={'priority': 'high'})
+    assert response.status_code == 200
+    assert response.json() == 'priority=high'
+
+def test_nested_body():
+    response = client.post('/cmd/nested_body',
+        json={'msg': {'body_msg': 'hello'}, 'tag': 't1'}
+    )
+    assert response.status_code == 200
+    assert response.json() == 'msg=hello, tag=t1'
+
+def test_return_model():
+    response = client.get('/query/return_model', params={'name': 'test'})
+    assert response.status_code == 200
+    assert response.json() == {'body_msg': 'test'}
+
+def test_return_falsy_int():
+    response = client.get('/query/return_falsy_int')
+    assert response.status_code == 200
+    assert response.json() == 0
+
+def test_return_false():
+    response = client.get('/query/return_false')
+    assert response.status_code == 200
+    assert response.json() is False

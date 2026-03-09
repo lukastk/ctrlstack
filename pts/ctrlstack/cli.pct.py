@@ -22,86 +22,37 @@ import ctrlstack.cli as this_module
 import typer
 from ctrlstack import Controller, ControllerMethodType
 import functools
-from typing import List, Callable, Optional, get_origin, get_args, Dict, Union, Any, Mapping
+from typing import List, Callable, Optional, get_origin, get_args, get_type_hints, Dict, Union, Any, Mapping
 import inspect
 import asyncio
 import json
-from pydantic import BaseModel
+from pydantic import BaseModel, TypeAdapter
+from ctrlstack.type_utils import is_query_param_type
 
 # %%
 #|exporti
-def _is_dict_annotation(annotation):
-    origin = get_origin(annotation)
-    if origin is dict or origin is Dict or annotation is dict:
-        return True
-    # Handle Optional[Dict] and Union types
-    if origin is not None and hasattr(origin, "__origin__"):
-        origin = origin.__origin__
-    if origin is not None and origin.__name__ == "Union":
-        args = get_args(annotation)
-        return any(_is_dict_annotation(arg) for arg in args if arg is not type(None))
-    return False
-
-# %%
-assert _is_dict_annotation(dict)
-assert _is_dict_annotation(Dict)
-assert _is_dict_annotation(Dict[str, int])
-assert _is_dict_annotation(Optional[Dict[str, str]])
-
-# %%
-#|exporti
-def _unwrap_optional(annotation):
-    """
-    If annotation is Optional[T], return T. Otherwise, return annotation.
-    """
-    origin = get_origin(annotation)
-    if origin is not None and origin.__name__ == "Union":
-        args = [arg for arg in get_args(annotation) if arg is not type(None)]
-        if len(args) == 1:
-            return args[0]
-    return annotation
-
-# %%
-assert _unwrap_optional(Dict[str, int]) == Dict[str, int]
-assert _unwrap_optional(Optional[Dict[str, int]]) == Dict[str, int]
-assert _unwrap_optional(str) == str
-assert _unwrap_optional(Optional[str]) == str
-assert _unwrap_optional(None) == None
-
-# %%
-#|exporti
-def _is_pydantic_model(tp) -> bool:
-    return isinstance(tp, type) and issubclass(tp, BaseModel)
-
 def _make_typer_compatible_func(func):
     sig = inspect.signature(func)
     params = list(sig.parameters.values())
+    type_hints = get_type_hints(func)
 
     new_params = []
-    # store converters per-arg instead of classes; more flexible
     converters: dict[str, Callable[[str], Any]] = {}
     changed_params: set[str] = set()
 
     for p in params:
-        ann = p.annotation
-        if ann is inspect._empty:
+        ann = type_hints.get(p.name)
+        if ann is None:
             new_params.append(p)
             continue
 
-        ann2 = _unwrap_optional(ann)
-
-        if _is_pydantic_model(ann2):
-            # CLI receives JSON string -> parse -> model(**dict)
-            new_params.append(p.replace(annotation=str))
-            converters[p.name] = (lambda M: (lambda s: M(**json.loads(s))))(ann2)
-            changed_params.add(p.name)
-        elif _is_dict_annotation(ann2):
-            # CLI receives JSON string -> dict
-            new_params.append(p.replace(annotation=str))
-            converters[p.name] = lambda s: json.loads(s)
-            changed_params.add(p.name)
+        if is_query_param_type(ann):
+            new_params.append(p)  # Typer handles natively (int, str, bool, Enum, etc.)
         else:
-            new_params.append(p)
+            new_params.append(p.replace(annotation=str))
+            ta = TypeAdapter(ann)
+            converters[p.name] = ta.validate_json
+            changed_params.add(p.name)
 
     new_sig = sig.replace(parameters=new_params)
 
