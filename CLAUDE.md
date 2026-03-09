@@ -21,9 +21,9 @@ This project uses **nblite** for literate programming. See `NBLITE_INSTRUCTIONS.
 | `nbs` | `nbs/ctrlstack/` | `.ipynb` (source of truth, gitignored) |
 | `pts` | `pts/ctrlstack/` | `.pct.py` (plaintext notebooks) |
 | `lib` | `src/ctrlstack/` | `.py` (auto-generated, gitignored except `__init__.py`) |
-| `nbs_tests` | `nbs/tests/` | `.ipynb` (gitignored) |
-| `pts_tests` | `pts/tests/` | `.pct.py` |
-| `lib_tests` | `src/tests/` | `.py` (auto-generated, gitignored) |
+| `nbs_tests` | `nbs/tests/integration/` | `.ipynb` (gitignored) |
+| `pts_tests` | `pts/tests/integration/` | `.pct.py` |
+| `lib_tests` | `src/tests/integration/` | `.py` (auto-generated, gitignored) |
 
 ### Critical workflow rules
 
@@ -59,7 +59,7 @@ nbl test                      # Test that all notebooks execute without errors
 
 # Testing (requires nbl export first to generate src/tests/)
 uv run pytest                 # Run all tests
-uv run pytest src/tests/test_cli.py  # Run a single test file
+uv run pytest src/tests/integration/test_cli.py  # Run a single test file
 uv run pytest -k test_bar     # Run tests matching a pattern
 
 # Dependencies

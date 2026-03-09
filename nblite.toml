@@ -22,13 +22,13 @@ path="pts/ctrlstack"
 format="percent"
 
 [cl.lib_tests]
-path="src/tests"
+path="src/tests/integration"
 format="module"
 
 [cl.nbs_tests]
-path="nbs/tests"
+path="nbs/tests/integration"
 format="ipynb"
 
 [cl.pts_tests]
-path="pts/tests"
+path="pts/tests/integration"
 format="percent"
