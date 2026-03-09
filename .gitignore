@@ -1,9 +1,10 @@
 
 # nblite
-ctrlstack/**/*.py 
-ctrlstack/store
+src/ctrlstack/**/*.py
+src/tests/
 !__main__.py
 !__init__.py
+nbs/
 
 .tmp/
 _proc/

@@ -19,7 +19,7 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build]
 ignore-vcs = true
-packages = ["ctrlstack"]
+packages = ["src/ctrlstack"]
 include = [
 ]
 
