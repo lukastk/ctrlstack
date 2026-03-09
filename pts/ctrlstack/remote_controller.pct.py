@@ -1,3 +1,11 @@
+# ---
+# jupyter:
+#   kernelspec:
+#     display_name: ctrlstack
+#     language: python
+#     name: python3
+# ---
+
 # %% [markdown]
 # # remote_controller
 
@@ -23,7 +31,6 @@ from pydantic import BaseModel
 from dataclasses import is_dataclass, asdict
 from ctrlstack.server import _construct_route
 import json
-
 
 # %% [markdown]
 # Does FastAPI provide some kind of way of converting a set of args and kwargs into inputs to `requests`? That is, converting them into the `params` and `json` of `requests.post` and `requests.get` etc.
@@ -57,14 +64,12 @@ def map_args_with_signature_types(func: Callable, args: List[Any], kwargs: Dict[
         for name, value in bound.arguments.items()
     }
 
-
 # %%
 def example_func(a, b: int, c="default", d: Optional[str]=None):
     pass
 
 result = map_args_with_signature_types(example_func, [10, 20], {"d": [1, 2, 3]})
 print(result)
-
 
 # %%
 #|exporti
@@ -120,7 +125,6 @@ def prepare_requests_args(func: Callable, args: List[Any], kwargs: Dict[str, Any
 
     return params, json_body
 
-
 # %%
 class FooModel(BaseModel):
     name: str
@@ -143,7 +147,6 @@ params, body = prepare_requests_args(
 
 print("Params:", params)
 print("Body:", body)
-
 
 # %%
 #|export
@@ -189,7 +192,6 @@ class RemoteController(Controller):
             route = _construct_route(method, method_name, prepend_method_group)
             register_method(method, route)
 
-
 # %%
 #|export
 def create_remote_controller(
@@ -199,7 +201,6 @@ def create_remote_controller(
 ) -> RemoteController:
     class _RemoteController(RemoteController, base_controller_cls=base_controller_cls): pass
     return _RemoteController(url, api_key)
-
 
 # %%
 # Check that the argument sets of RemoteController.__init__ and create_remote_controller match

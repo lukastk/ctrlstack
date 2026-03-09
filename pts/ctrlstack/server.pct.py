@@ -1,3 +1,11 @@
+# ---
+# jupyter:
+#   kernelspec:
+#     display_name: ctrlstack
+#     language: python
+#     name: python3
+# ---
+
 # %% [markdown]
 # # server
 
@@ -21,7 +29,6 @@ import inspect
 import signal, os
 from pathlib import Path
 
-
 # %%
 #|exporti
 def _construct_route(method: Callable, method_name:Optional[str]=None, prepend_method_group: bool=True):
@@ -31,7 +38,6 @@ def _construct_route(method: Callable, method_name:Optional[str]=None, prepend_m
     else:
         route = f"/{method_name}"
     return route
-
 
 # %%
 #|export
@@ -90,7 +96,6 @@ def create_controller_server(controller: Controller, prepend_method_group: bool=
 
     return app
 
-
 # %%
 from ctrlstack import ctrl_cmd_method, ctrl_query_method, ctrl_method
 
@@ -143,10 +148,8 @@ def _pid_exists(pid: int) -> bool:
     else:
         return True
 
-
 # %%
 assert _is_port_free(_find_free_port())
-
 
 # %%
 #|export
@@ -189,7 +192,6 @@ def start_local_controller_server_process(
     
     _start_fastapi_server(app, port=port)
 
-
 # %%
 #|export
 def get_local_controller_server_status(lockfile_path: str) -> Tuple[int, int, bool]:
@@ -213,7 +215,6 @@ def get_local_controller_server_status(lockfile_path: str) -> Tuple[int, int, bo
     pid = int(lines[1].strip())
     
     return port, pid, _pid_exists(pid)
-
 
 # %%
 #|export
@@ -242,7 +243,6 @@ def check_local_controller_server_process(
         else:
             raise ValueError(f"Invalid lockfile format: {lockfile_path}")
     return None, None, False
-
 
 # %%
 #|export

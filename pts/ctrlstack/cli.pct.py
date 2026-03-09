@@ -1,3 +1,11 @@
+# ---
+# jupyter:
+#   kernelspec:
+#     display_name: ctrlstack
+#     language: python
+#     name: python3
+# ---
+
 # %% [markdown]
 # # cli
 
@@ -20,7 +28,6 @@ import asyncio
 import json
 from pydantic import BaseModel
 
-
 # %%
 #|exporti
 def _is_dict_annotation(annotation):
@@ -35,13 +42,11 @@ def _is_dict_annotation(annotation):
         return any(_is_dict_annotation(arg) for arg in args if arg is not type(None))
     return False
 
-
 # %%
 assert _is_dict_annotation(dict)
 assert _is_dict_annotation(Dict)
 assert _is_dict_annotation(Dict[str, int])
 assert _is_dict_annotation(Optional[Dict[str, str]])
-
 
 # %%
 #|exporti
@@ -56,14 +61,12 @@ def _unwrap_optional(annotation):
             return args[0]
     return annotation
 
-
 # %%
 assert _unwrap_optional(Dict[str, int]) == Dict[str, int]
 assert _unwrap_optional(Optional[Dict[str, int]]) == Dict[str, int]
 assert _unwrap_optional(str) == str
 assert _unwrap_optional(Optional[str]) == str
 assert _unwrap_optional(None) == None
-
 
 # %%
 #|exporti
@@ -129,7 +132,6 @@ def _make_typer_compatible_func(func):
 
     return new_func
 
-
 # %%
 class MyArg(BaseModel):
     name: str
@@ -150,7 +152,6 @@ foo(
 # %%
 #|hide
 show_doc(this_module.create_controller_cli)
-
 
 # %%
 #|export
@@ -209,7 +210,6 @@ def create_controller_cli(controller: Controller, prepend_method_group: bool=Fal
             register_func(method, cmd_name)
 
     return app
-
 
 # %%
 from ctrlstack import ctrl_cmd_method, ctrl_query_method, ctrl_method

@@ -1,3 +1,11 @@
+# ---
+# jupyter:
+#   kernelspec:
+#     display_name: ctrlstack
+#     language: python
+#     name: python3
+# ---
+
 # %% [markdown]
 # # controller_app
 
@@ -15,7 +23,6 @@ from ctrlstack.controller import Controller, ControllerMethodType, ctrl_method, 
 import functools
 from typing import Type, Callable, Optional
 import inspect
-
 
 # %%
 #|exporti
@@ -51,7 +58,6 @@ def _add_method_to_class(func: Callable, controller_cls: Type[Controller], name:
     method.__name__ = name or func.__name__
     setattr(controller_cls, method.__name__, method)
 
-
 # %%
 #|export
 class ControllerApp:
@@ -86,7 +92,6 @@ class ControllerApp:
     
     def get_controller(self) -> Type[Controller]:
         return self._controller_cls()
-
 
 # %%
 capp = ControllerApp()

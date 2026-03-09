@@ -1,20 +1,34 @@
 export_pipeline = """
 nbs -> pts
-pts -> lib
+nbs -> lib
+
+nbs_tests -> lib_tests
+nbs_tests -> pts_tests
 """
 
 docs_cl="nbs"
 docs_title="ctrlstack"
 
 [cl.lib]
-path="ctrlstack"
+path="src/ctrlstack"
+format="module"
 
 [cl.nbs]
+path="nbs/ctrlstack"
 format="ipynb"
 
 [cl.pts]
+path="pts/ctrlstack"
 format="percent"
 
-[cl.tests]
-path="tests"
+[cl.lib_tests]
+path="src/tests"
+format="module"
+
+[cl.nbs_tests]
+path="nbs/tests"
 format="ipynb"
+
+[cl.pts_tests]
+path="pts/tests"
+format="percent"

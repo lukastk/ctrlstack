@@ -1,3 +1,11 @@
+# ---
+# jupyter:
+#   kernelspec:
+#     display_name: ctrlstack
+#     language: python
+#     name: python3
+# ---
+
 # %% [markdown]
 # # controller
 
@@ -13,7 +21,6 @@ import ctrlstack.controller as this_module
 #|export
 from abc import ABC, abstractmethod
 from enum import Enum
-
 
 # %%
 #|export
@@ -44,7 +51,6 @@ def ctrl_query_method(func):
     """Decorator to define a query method in a Controller."""
     return ctrl_method(ControllerMethodType.QUERY, 'query')(func)
 
-
 # %%
 #|export
 class Controller(ABC):
@@ -62,7 +68,6 @@ class Controller(ABC):
         if group is not None:
             controller_methods = [name for name in controller_methods if getattr(cls, name)._controller_method_group == group]
         return controller_methods
-
 
 # %%
 class FooController(Controller):

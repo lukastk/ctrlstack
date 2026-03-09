@@ -1,3 +1,11 @@
+# ---
+# jupyter:
+#   kernelspec:
+#     display_name: ctrlstack
+#     language: python
+#     name: python3
+# ---
+
 # %% [markdown]
 # # remote_cli
 
@@ -40,12 +48,10 @@ def is_pickleable(obj):
     except Exception:
         return False
 
-
 # %%
 assert not is_pickleable(lambda x: x)
 def foo(): pass
 assert is_pickleable(foo)
-
 
 # %%
 #|export
@@ -133,7 +139,6 @@ def create_remote_controller_cli(
         
     return cli_app
     
-
 
 # %%
 from ctrlstack import ctrl_cmd_method, ctrl_query_method, ctrl_method
