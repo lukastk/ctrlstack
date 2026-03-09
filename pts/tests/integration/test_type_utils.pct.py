@@ -22,7 +22,7 @@ import pytest
 from enum import Enum
 from typing import Optional, List, Dict, Union
 from pydantic import BaseModel
-from ctrlstack.type_utils import is_query_param_type, serialize_value, deserialize_value
+from ctrlstack.type_utils import is_query_param_type, serialize_value, deserialize_value, serialize_for_query_param
 
 # %%
 #|export
@@ -155,3 +155,36 @@ def test_roundtrip_list_of_models():
 
 def test_roundtrip_enum():
     assert deserialize_value(serialize_value(Priority.LOW, Priority), Priority) == Priority.LOW
+
+# %%
+#|export
+# --- serialize_for_query_param tests ---
+
+def test_serialize_for_query_param_enum():
+    assert serialize_for_query_param(Priority.HIGH) == "high"
+    assert serialize_for_query_param(Priority.LOW) == "low"
+
+def test_serialize_for_query_param_int():
+    assert serialize_for_query_param(42) == 42
+
+def test_serialize_for_query_param_str():
+    assert serialize_for_query_param("hello") == "hello"
+
+def test_serialize_for_query_param_bool():
+    assert serialize_for_query_param(True) is True
+
+# %%
+#|export
+# --- Additional is_query_param_type edge cases ---
+
+def test_is_query_param_type_optional_float():
+    assert is_query_param_type(Optional[float]) is True
+
+def test_is_query_param_type_optional_bool():
+    assert is_query_param_type(Optional[bool]) is True
+
+def test_is_query_param_type_optional_model():
+    assert is_query_param_type(Optional[Inner]) is False
+
+def test_is_query_param_type_optional_list():
+    assert is_query_param_type(Optional[List[int]]) is False

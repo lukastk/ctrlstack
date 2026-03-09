@@ -29,8 +29,7 @@ import requests
 from typing import get_type_hints, get_args, get_origin
 from pydantic import BaseModel, TypeAdapter
 from ctrlstack.server import _construct_route
-from ctrlstack.type_utils import is_query_param_type, serialize_value
-from enum import Enum
+from ctrlstack.type_utils import is_query_param_type, serialize_value, serialize_for_query_param
 import json
 
 # %% [markdown]
@@ -86,7 +85,7 @@ def prepare_requests_args(func: Callable, args: List[Any], kwargs: Dict[str, Any
             continue
         effective_type = sig_type if sig_type is not None else type(value)
         if is_query_param_type(effective_type):
-            params[key] = value.value if isinstance(value, Enum) else value
+            params[key] = serialize_for_query_param(value)
         else:
             json_body[key] = serialize_value(value, effective_type)
             num_body_params += 1

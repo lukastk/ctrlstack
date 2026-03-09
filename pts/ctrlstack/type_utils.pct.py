@@ -43,6 +43,14 @@ def is_query_param_type(type_hint) -> bool:
 
 # %%
 #|export
+def serialize_for_query_param(value: Any) -> Any:
+    """Convert a query param value to its wire format (e.g. Enum -> .value)."""
+    if isinstance(value, Enum):
+        return value.value
+    return value
+
+# %%
+#|export
 def serialize_value(value: Any, type_hint) -> Any:
     """Serialize any Python value to JSON-safe form via TypeAdapter."""
     return TypeAdapter(type_hint).dump_python(value, mode='json')
@@ -87,6 +95,14 @@ assert is_query_param_type(List[int]) == False
 assert is_query_param_type(List[MyModel]) == False
 assert is_query_param_type(None) == False
 assert is_query_param_type(Union[int, str]) == False
+
+# %%
+# Inline tests for serialize_for_query_param
+assert serialize_for_query_param(Priority.HIGH) == "high"
+assert serialize_for_query_param(Priority.LOW) == "low"
+assert serialize_for_query_param(42) == 42
+assert serialize_for_query_param("hello") == "hello"
+assert serialize_for_query_param(True) is True
 
 # %%
 # Inline tests for serialize_value / deserialize_value
