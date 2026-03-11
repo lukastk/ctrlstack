@@ -1,7 +1,7 @@
 # ---
 # jupyter:
 #   kernelspec:
-#     display_name: Python 3
+#     display_name: ctrlstack (3.11.14)
 #     language: python
 #     name: python3
 # ---
@@ -104,7 +104,7 @@ async def fetch_data(url: str) -> str:
     return f"Fetched data from {url}"
 
 ctrl4 = capp4.get_controller()
-result = asyncio.run(ctrl4.fetch_data("https://example.com"))
+result = await ctrl4.fetch_data("https://example.com")
 print(result)
 
 # Works through CLI too

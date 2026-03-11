@@ -1,7 +1,7 @@
 # ---
 # jupyter:
 #   kernelspec:
-#     display_name: Python 3
+#     display_name: ctrlstack (3.11.14)
 #     language: python
 #     name: python3
 # ---
@@ -83,19 +83,19 @@ print(type(remote))
 
 # %%
 # Add tasks (command -> POST)
-result = asyncio.run(remote.add_task(task=Task(title="Write docs", priority=Priority.HIGH)))
+result = await remote.add_task(task=Task(title="Write docs", priority=Priority.HIGH))
 print(result)
 
-result = asyncio.run(remote.add_task(task=Task(title="Fix bug", priority=Priority.LOW)))
+result = await remote.add_task(task=Task(title="Fix bug", priority=Priority.LOW))
 print(result)
 
 # Query tasks (query -> GET) — returns deserialized Task models
-tasks = asyncio.run(remote.get_tasks())
+tasks = await remote.get_tasks()
 print(f"\nTasks: {tasks}")
 print(f"Type: {type(tasks[0])}")  # Task, not dict!
 
 # Falsy values are returned correctly (not swallowed)
-count = asyncio.run(remote.count())
+count = await remote.count()
 print(f"\nCount: {count}")
 
 # %% [markdown]

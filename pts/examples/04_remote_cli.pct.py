@@ -1,7 +1,7 @@
 # ---
 # jupyter:
 #   kernelspec:
-#     display_name: Python 3
+#     display_name: ctrlstack (3.11.14)
 #     language: python
 #     name: python3
 # ---
