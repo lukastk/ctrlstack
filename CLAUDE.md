@@ -13,6 +13,7 @@ This project uses **nblite** for literate programming. See `NBLITE_INSTRUCTIONS.
 **Export pipeline (from `nblite.toml`):**
 - `nbs -> pts` and `nbs -> lib` (nbs is source of truth for the library)
 - `nbs_tests -> pts_tests` and `nbs_tests -> lib_tests` (nbs is source of truth for tests)
+- `nbs_examples -> pts_examples` (example notebooks, no lib export)
 
 **Directory layout:**
 

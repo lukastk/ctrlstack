@@ -4,6 +4,8 @@ nbs -> lib
 
 nbs_tests -> lib_tests
 nbs_tests -> pts_tests
+
+nbs_examples -> pts_examples
 """
 
 docs_cl="nbs"
@@ -31,4 +33,12 @@ format="ipynb"
 
 [cl.pts_tests]
 path="pts/tests/integration"
+format="percent"
+
+[cl.nbs_examples]
+path="nbs/examples"
+format="ipynb"
+
+[cl.pts_examples]
+path="pts/examples"
 format="percent"
